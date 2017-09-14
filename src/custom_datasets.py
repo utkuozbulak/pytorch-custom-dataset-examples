@@ -14,28 +14,7 @@ import torchvision.transforms as transforms
 from torch.utils.data.dataset import Dataset  # For custom datasets
 
 
-def load_data(batch_size):
-    train_dataset = dsets.MNIST(root='../data',
-                                train=True,
-                                transform=transforms.ToTensor(),
-                                download=True)
-
-    test_dataset = dsets.MNIST(root='../data',
-                               train=False,
-                               transform=transforms.ToTensor())
-
-    # PyTorch's own data loader
-    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                               batch_size=batch_size,
-                                               shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
-                                              batch_size=batch_size,
-                                              shuffle=False)
-    print(type(test_dataset))
-    return (train_loader, test_loader)
-
-
-class CustomImageDataset(Dataset):
+class CustomImageDatasetFromImages(Dataset):
     def __init__(self, csv_path, folder_path, transform=None):
         self.data_info = pd.read_csv(csv_path, header=None)
         self.img_path = folder_path
@@ -53,18 +32,23 @@ class CustomImageDataset(Dataset):
     def __len__(self):
         return len(self.data_info.index)
 
+class CustomImageDatasetFromCSV(Dataset):
+    def __init__(self, csv_path, folder_path, transform=None):
+        self.data_info = pd.read_csv(csv_path, header=None)
+        self.img_path = folder_path
+        self.transform = transform
+        self.labels = np.asarray(self.data_info.iloc[:, 1])
 
-train_dataset = dsets.MNIST(root='../data',
-                            train=True,
-                            transform=transforms.ToTensor(),
-                            download=False)
+    def __getitem__(self, index):
+        single_image_label = self.labels[index]
+        single_image_name = self.data_info.iloc[index][0]
+        img_as_img = Image.open(self.img_path + '/' + single_image_name)
+        if self.transform is not None:
+            img_as_tensor = self.transform(img_as_img)
+        return (img_as_tensor, single_image_label)
 
-train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
-                                               batch_size=10,
-                                               shuffle=False)
-
-for i, (images, labels) in enumerate(train_loader):
-    break
+    def __len__(self):
+        return len(self.data_info.index)
 
 """
 train_dataset = dsets.CIFAR10(root='../data',

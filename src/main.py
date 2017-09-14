@@ -6,16 +6,16 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torchvision import transforms
 from model_cnn import MnistCNNModel
-from data_loader import load_data
-from data_loader import CustomImageDataset
+from custom_datasets import CustomImageDatasetFromImages
 
 z = 1
 
 transformations = transforms.Compose([transforms.ToTensor()])
 
-custom_mnist_dataset = CustomImageDataset('/home/ut/git/pytorch-experiments/data/mnist/train.csv',
-                                    '/home/ut/git/pytorch-experiments/data/mnist/train',
-                                    transformations)
+custom_mnist_dataset =  \
+    CustomImageDatasetFromImages('/home/ut/git/pytorch-experiments/data/mnist/train.csv',
+                                 '/home/ut/git/pytorch-experiments/data/mnist/train',
+                                 transformations)
 
 custom_imagenet_dataset = CustomImageDataset('/home/ut/git/pytorch-experiments/data/imagenet_classes.csv',
                                     '/home/ut/git/pytorch-experiments/data/imagenet_images',
