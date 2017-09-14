@@ -12,19 +12,25 @@ class CustomDatasetFromImages(Dataset):
         self.data_info = pd.read_csv(csv_path, header=None)
         self.img_path = img_path
         self.transform = transform
-        self.labels = np.asarray(self.data_info.iloc[:, 1])
+        self.labels = np.asarray(self.data_info.iloc[:, 1])  # Second column is the labels
+        # Third column is for operation indicator
         self.operation = np.asarray(self.data_info.iloc[:, 2])
 
     def __getitem__(self, index):
+        # Get label(class) of the image based on the cropped pandas column
         single_image_label = self.labels[index]
+        # Get image name from the pandas df
         single_image_name = self.data_info.iloc[index][0]
+        # Open image
         img_as_img = Image.open(self.img_path + '/' + single_image_name)
-        # Operation
+        # If there is an operation
         if self.operation[index] == 'TRUE':
-            # Some operation on image
+            # Do some operation on image
             pass
+        # Transform image to tensor
         if self.transform is not None:
             img_as_tensor = self.transform(img_as_img)
+        # Return image and the label
         return (img_as_tensor, single_image_label)
 
     def __len__(self):
