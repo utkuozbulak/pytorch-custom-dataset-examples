@@ -4,7 +4,13 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+from torchvision import transforms
 from torch.utils.data.dataset import Dataset  # For custom datasets
+
+from cnn_model import MnistCNNModel
 
 
 class CustomDatasetFromImages(Dataset):
@@ -65,3 +71,40 @@ class CustomDatasetFromCSV(Dataset):
 
     def __len__(self):
         return len(self.data.index)
+
+
+if __name__ == "__main__":
+
+    transformations = transforms.Compose([transforms.ToTensor()])
+
+    custom_mnist_from_images =  \
+        CustomDatasetFromImages('../data/mnist_labels.csv',
+                                '../data/mnist_images',
+                                transformations)
+    custom_mnist_from_csv = \
+        CustomDatasetFromCSV('../data/mnist_in_csv.csv',
+                             28, 28,
+                             transformations)
+
+    mn_dataset_loader = torch.utils.data.DataLoader(dataset=custom_mnist_from_images,
+                                                    batch_size=10,
+                                                    shuffle=False)
+
+    model = MnistCNNModel()
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+
+    for i, (images, labels) in enumerate(mn_dataset_loader):
+        images = Variable(images)
+        labels = Variable(labels)
+        # Clear gradients
+        optimizer.zero_grad()
+        # Forward pass
+        outputs = model(images)
+        # Calculate loss
+        loss = criterion(outputs, labels)
+        # Backward pass
+        loss.backward()
+        # Update weights
+        optimizer.step()
+        break

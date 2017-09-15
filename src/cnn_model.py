@@ -1,6 +1,5 @@
 # Author: Utku Ozbulak
 # utku.ozbulak@gmail.com
-
 import torch.nn as nn
 
 
