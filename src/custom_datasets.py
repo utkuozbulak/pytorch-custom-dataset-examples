@@ -1,5 +1,3 @@
-# Author: Utku Ozbulak
-# utku.ozbulak@gmail.com
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -15,6 +13,12 @@ from cnn_model import MnistCNNModel
 
 class CustomDatasetFromImages(Dataset):
     def __init__(self, csv_path, img_path, transform=None):
+        """
+        Args:
+            csv_path (string): path to csv file
+            img_path (string): path to the folder where images are
+            transform: pytorch transforms for transforms and tensor conversion
+        """
         self.data_info = pd.read_csv(csv_path, header=None)
         self.img_path = img_path
         self.transform = transform
@@ -45,6 +49,13 @@ class CustomDatasetFromImages(Dataset):
 
 class CustomDatasetFromCSV(Dataset):
     def __init__(self, csv_path, height, width, transform=None):
+        """
+        Args:
+            csv_path (string): path to csv file
+            height (int): image height
+            width (int): image width
+            transform: pytorch transforms for transforms and tensor conversion
+        """
         self.data = pd.read_csv(csv_path)
         self.labels = np.asarray(self.data.iloc[:, 0])
         self.height = height
