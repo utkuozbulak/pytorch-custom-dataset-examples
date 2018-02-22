@@ -39,7 +39,7 @@ This is the skeleton that you have to fill to have a custom dataset. A dataset m
 * `__init__()` function is where the initial logic happens like reading a csv, assigning transforms etc.
 * `__getitem__()` function returns the data and labels. This function is called from dataloader like this:
 ```python
-img, label = CustomDataset.__getitem__(99)  # For 99th item
+img, label = MyCustomDataset.__getitem__(99)  # For 99th item
 ```
 So, the index parameter is the **n**th data/image (as tensor) you are going to return.
 
@@ -60,14 +60,14 @@ class MyCustomDataset(Dataset):
     def __init__(self, ..., transforms=None):
         # stuff
         ...
-        self.transform = transform
+        self.transforms = transforms
         
     def __getitem__(self, index):
         # stuff
         ...
         data = # Some data read from a file or image
-        if self.transform is not None:
-            data = self.transform(data)
+        if self.transforms is not None:
+            data = self.transforms(data)
         # If the transform variable is not empty
         # then it applies the operations in the transforms with the order that it is created.
         return (img, label)
@@ -114,8 +114,8 @@ class MyCustomDataset(Dataset):
         data = self.center_crop(data)  # (2)
         data = self.to_tensor(data)  # (2)
         
-        # (3) Or you can call the composed version
-        data = self.trasnformations(data)
+        # Or you can call the composed version
+        data = self.trasnformations(data)  # (3)
         
         # Note that you only need one of the implementations, (2) or (3)
         return (img, label)
