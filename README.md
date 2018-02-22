@@ -32,17 +32,20 @@ class MyCustomDataset(Dataset):
         return count # of how many examples(images?) you have
 ```
 
-This is the skeleton that you have to fill to have a custom dataset. A dataset must contain following functions to be used by data loader afterwards. 
+This is the skeleton that you have to fill to have a custom dataset. A dataset must contain following functions to be used by data loader later on. 
 
-* **init** function where the initial logic happens like reading a csv, assigning parameters etc.
-* **getitem** function where it returns a tuple of image and the label of the image. This function is called from dataloader like this:
+* `__init__()` function is where the initial logic happens like reading a csv, assigning transforms etc.
+* `__getitem__()` function returns the data and labels. This function is called from dataloader like this:
 ```python
-img, label = CustomDataset.__getitem__(99)
+img, label = CustomDataset.__getitem__(99)  # For 99th item
 ```
-So, the index parameter is the **n**th image(as tensor, numpy whatever you want) you are going to return.
+So, the index parameter is the **n**th data/image (as tensor) you are going to return.
 
-* **len** function where it returns count of samples you have.
+* `__len__()` returns count of samples you have.
 
+An important thing to note is that `__getitem__()` return a specific type for a single data point (like a tensor, numpy array etc.), otherwise, in the data loader you will get an error like:
+
+TypeError: batch must contain tensors, numbers, dicts or lists; found <class 'PIL.PngImagePlugin.PngImageFile'>
 
 ## Using Torchvision Transforms
 In most of the examples you see `transforms = None` in the `__init__()`, this is used to apply torchvision transforms to your data/image. You can find the extensive list of the transforms [here](http://pytorch.org/docs/0.2.0/torchvision/transforms.html) and [here](https://github.com/pytorch/vision/blob/master/torchvision/transforms/transforms.py). The most common usage of transforms is like this:
@@ -127,7 +130,7 @@ if __name__ == '__main__':
 
 ## Incorporating Pandas
 
-Let's say we want to read some data from a csv with pandas. The first example is of having a csv file like following (without the headers, even though it really doesn't matter), that contains file name, label(class) and an extra operation indicator.
+Let's say we want to read some data from a csv with pandas. The first example is of having a csv file like following (without the headers, even though it really doesn't matter), that contains file name, label(class) and an extra operation indicator and depending on this extra operation flag we do some operation on the image.
 
  File Name      | Label           | Extra Operation  |
 | ------------- |:-------------:| :-----:|
@@ -183,40 +186,16 @@ class CustomDatasetFromImages(Dataset):
 
     def __len__(self):
         return self.data_len
+
+if __name__ == "__main__":
+    # Call dataset
+    custom_mnist_from_images =  \
+        CustomDatasetFromImages('../data/mnist_labels.csv')
 ```
 
-## Incorporating Pandas
+## Incorporating Pandas - Puttng More Stuff in in `__getitem__()`
 
-In most of the examples, if not all, when a dataset is called, it is given a transform operation like this:
-```python
-transformations = transforms.Compose([transforms.ToTensor()])
-custom_mnist_from_images =  CustomDatasetFromImages('path_to_csv', 'path_to_images', transformations)
-```
-transforms can contain more operations like normalize, random crop etc. The source code is [here](https://github.com/pytorch/vision/blob/master/torchvision/transforms.py). But at the end, it will probably contain transforms.ToTensor(). This operation turns the PIL images to tensors so that you can feed it to models. Thats why just before returning the tuple in **__getitem__** we do:
-```python
-# Transform image to tensor
-        if self.transform is not None:
-            img_as_tensor = self.transform(img_as_img)
-```
-Also, ToTensor can convert both grayscale and RGB images so you don't have to worry about how many channels you have for images.
-
-**__len__** function is supposed to return the amount of images(or samples) you have, since we read the csv to pandas df at the beginning we can get the amount of samples as `len(self.data_info.index)`.
-
-You can also make use of other columns in csv to do some operations, you just have to read the column and operate on image if there is an operation.
-```python
-...
- # Third column is for operation indicator
- self.operation = np.asarray(self.data_info.iloc[:, 2])
- ...
- 
- ...
- if self.operation[index] == 'TRUE':
-     # Do some operation
- ...
-        
-```
-
-Yet another example might be reading an image from CSV where the value of each pixel is listed in a column. This just changes the parameters we take as an input and the logic in **__getitem__**. In the end, you just return images as tensors and their labels.
+Yet another example might be reading an image from CSV where the value of each pixel is listed in a column. (Sometimes MNIST is given this way). This just changes the logic in `__getitem__()`. In the end, you just return images as tensors and their labels.
 
 ```python
 class CustomDatasetFromCSV(Dataset):
@@ -255,5 +234,7 @@ class CustomDatasetFromCSV(Dataset):
     def __len__(self):
         return len(self.data.index)
 ```
+
+
 
 I will continue updating this repo if I do some fancy stuff in the future that is different than these examples.
