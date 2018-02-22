@@ -4,8 +4,7 @@
 
 # PyTorch Custom Dataset Examples
 
-There are some official custom dataset examples on PyTorch repo like [this](https://github.com/pytorch/tutorials/blob/master/beginner_source/data_loading_tutorial.py) but they still seemed a bit obscure to a beginner (like me) so I had to spend some time understanding what exactly I needed to have a fully customized dataset. To save you the trouble of going through bajillion of pages, here I decided to write the basics:
-
+There are some official custom dataset examples on PyTorch repo like [this](https://github.com/pytorch/tutorials/blob/master/beginner_source/data_loading_tutorial.py) but they still seemed a bit obscure to a beginner (like me) so I had to spend some time understanding what exactly I needed to have a fully customized dataset. To save you the trouble of going through bajillion of pages, here I decided to write the basics of Pytorch datasets. The topics are as follows.
 
 # Topics
 - [Custom Dataset Fundamentals](#custom-dataset-fundamentals)
