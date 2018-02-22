@@ -12,7 +12,9 @@ There are some official custom dataset examples on PyTorch repo like [this](http
 - [Using Torchvision Transforms](#using-torchvision-transforms)
 - [Another Way to Use Torchvision Transforms](#another-way-to-use-torchvision-transforms)
 - [Incorporating Pandas (Reading csv)](#incorporating-pandas)
-
+- [Incorporating Pandas with More Logic in `__getitem__()`](#incorporating-pandas-with-more-logic)
+- [Using Data Loader with Custom Datasets](#using-data-loader)
+- [What's Next?](#future-updates)
 
 ## Custom Dataset Fundamentals
 The first and foremost part is creating a dataset class.
@@ -193,13 +195,21 @@ if __name__ == "__main__":
         CustomDatasetFromImages('../data/mnist_labels.csv')
 ```
 
-## Incorporating Pandas - Puttng More Stuff in in `__getitem__()`
+## Incorporating Pandas with More Logic
 
-Yet another example might be reading an image from CSV where the value of each pixel is listed in a column. (Sometimes MNIST is given this way). This just changes the logic in `__getitem__()`. In the end, you just return images as tensors and their labels.
+Yet another example might be reading an image from CSV where the value of each pixel is listed in a column. (Sometimes MNIST is given this way). This just changes the logic in `__getitem__()`. In the end, you just return images as tensors and their labels. The data is divided into pixels like
+
+Label     | pixel_1           | pixel_2  | ... |
+| ------------- |:-------------:| :-----:|  :-----:| 
+| 1      | 50 | 99 | ... |
+| 0      | 21      |   223 | ... |
+| 9      | 44      |    112 | ... |
+
+
 
 ```python
 class CustomDatasetFromCSV(Dataset):
-    def __init__(self, csv_path, height, width, transform=None):
+    def __init__(self, csv_path, height, width, transforms=None):
         """
         Args:
             csv_path (string): path to csv file
@@ -211,7 +221,7 @@ class CustomDatasetFromCSV(Dataset):
         self.labels = np.asarray(self.data.iloc[:, 0])
         self.height = height
         self.width = width
-        self.transform = transform
+        self.transforms = transform
 
     def __getitem__(self, index):
         single_image_label = self.labels[index]
@@ -226,15 +236,51 @@ class CustomDatasetFromCSV(Dataset):
         img_as_img = Image.fromarray(img_as_np)
         img_as_img = img_as_img.convert('L')
         # Transform image to tensor
-        if self.transform is not None:
-            img_as_tensor = self.transform(img_as_img)
+        if self.transforms is not None:
+            img_as_tensor = self.transforms(img_as_img)
         # Return image and the label
         return (img_as_tensor, single_image_label)
 
     def __len__(self):
         return len(self.data.index)
+        
+
+if __name__ == "__main__":
+    transformations = transforms.Compose([transforms.ToTensor()])
+    custom_mnist_from_csv = \
+        CustomDatasetFromCSV('../data/mnist_in_csv.csv', 28, 28, transformations)
+        
 ```
 
+## Using Data Loader
+Pytorch DataLoaders just call `__getitem__()` and wrap them up to a batch. We can technically not use Data Loaders and call `__getitem__()` one at a time and feed data to the models (even though it is super convenient to use data loader). Continuing from the example above, if we assume there is a custom dataset called *CustomDatasetFromCSV* then we can call the data loader like:
 
+```python
+...
+if __name__ == "__main__":
+    # Define transforms
+    transformations = transforms.Compose([transforms.ToTensor()])
+    # Define custom dataset
+    custom_mnist_from_csv = \
+        CustomDatasetFromCSV('../data/mnist_in_csv.csv',
+                             28, 28,
+                             transformations)
+    # Define data loader
+    mn_dataset_loader = torch.utils.data.DataLoader(dataset=custom_mnist_from_csv,
+                                                    batch_size=10,
+                                                    shuffle=False)
+    
+    for images, labels in mn_dataset_loader:
+        # Feed the data to the model
+```
 
-I will continue updating this repo if I do some fancy stuff in the future that is different than these examples.
+The firsts argument of the dataloader is the dataset, from there  it calls `__getitem__()` of that dataset. *batch_size* determines how many individual data points will be wrapped with a single batch. If we assume a single image tensor is of size: 1x28x28 (D:1, H:28, W:28) then, with this dataloader the returned tensor will be 10x1x28x28 (Batch-Depth-Height-Width).
+
+A note on using **multi GPU**. The way that multi gpu is used with Pytorch data loaders is that, it tries to divide the batches evenly among all GPUs you have. So, if you use batch size that is less than amount of GPUs you have, it won't be able utilize all GPUs. 
+
+## Future Updates
+
+I will continue updating this repository whenever I find spare time. Below, are some of the stuff I plan to include. Please let me know if you would like to see some other specific examples.
+
+- A working custom dataset for Imagenet with normalizations etc.
+- A custom dataset example for encoder-decoder networks like U-Net.
