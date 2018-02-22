@@ -12,39 +12,50 @@ from cnn_model import MnistCNNModel
 
 
 class CustomDatasetFromImages(Dataset):
-    def __init__(self, csv_path, img_path, transform=None):
+    def __init__(self, csv_path):
         """
         Args:
             csv_path (string): path to csv file
             img_path (string): path to the folder where images are
             transform: pytorch transforms for transforms and tensor conversion
         """
+        # Transforms
+        self.to_tensor = transforms.ToTensor()
+        # Read the csv file
         self.data_info = pd.read_csv(csv_path, header=None)
-        self.img_path = img_path
-        self.transform = transform
-        self.labels = np.asarray(self.data_info.iloc[:, 1])  # Second column is the labels
-        # Third column is for operation indicator
-        self.operation = np.asarray(self.data_info.iloc[:, 2])
+        # First column contains the image paths
+        self.image_arr = np.asarray(self.data_info.iloc[:, 0])
+        # Second column is the labels
+        self.label_arr = np.asarray(self.data_info.iloc[:, 1])
+        # Third column is for an operation indicator
+        self.operation_arr = np.asarray(self.data_info.iloc[:, 2])
+        # Calculate len
+        self.data_len = len(self.data_info.index)
 
     def __getitem__(self, index):
-        # Get label(class) of the image based on the cropped pandas column
-        single_image_label = self.labels[index]
         # Get image name from the pandas df
-        single_image_name = self.data_info.iloc[index][0]
+        single_image_name = self.image_arr[index]
         # Open image
-        img_as_img = Image.open(self.img_path + '/' + single_image_name)
+        img_as_img = Image.open(single_image_name)
+
+        # Check if there is an operation
+        some_operation = self.operation_arr[index]
         # If there is an operation
-        if self.operation[index] == 'TRUE':
+        if some_operation:
             # Do some operation on image
+            # ...
+            # ...
             pass
         # Transform image to tensor
-        if self.transform is not None:
-            img_as_tensor = self.transform(img_as_img)
-        # Return image and the label
+        img_as_tensor = self.to_tensor(img_as_img)
+
+        # Get label(class) of the image based on the cropped pandas column
+        single_image_label = self.label_arr[index]
+
         return (img_as_tensor, single_image_label)
 
     def __len__(self):
-        return len(self.data_info.index)
+        return self.data_len
 
 
 class CustomDatasetFromCSV(Dataset):
@@ -89,9 +100,8 @@ if __name__ == "__main__":
     transformations = transforms.Compose([transforms.ToTensor()])
 
     custom_mnist_from_images =  \
-        CustomDatasetFromImages('../data/mnist_labels.csv',
-                                '../data/mnist_images',
-                                transformations)
+        CustomDatasetFromImages('../data/mnist_labels.csv')
+
     custom_mnist_from_csv = \
         CustomDatasetFromCSV('../data/mnist_in_csv.csv',
                              28, 28,
