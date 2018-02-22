@@ -7,11 +7,10 @@
 There are some official custom dataset examples on PyTorch repo like [this](https://github.com/pytorch/tutorials/blob/master/beginner_source/data_loading_tutorial.py) but they still seemed a bit obscure to a beginner (like me) so I had to spend some time understanding what exactly I needed to have a fully customized dataset. To save you the trouble of going through bajillion of pages, here I decided to write the basics:
 
 
-- [More about PyTorch](#AAAA)
-- [Installation](#installation)
+- [More about PyTorch](#custom-dataset-fundamentals)
 
 
-## More about PyTorch
+## Custom Dataset Fundamentals
 The first and foremost part is creating a dataset class.
 
 ```python
