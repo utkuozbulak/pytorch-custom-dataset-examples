@@ -75,8 +75,8 @@ class CustomDatasetFromCSV(Dataset):
 
     def __getitem__(self, index):
         single_image_label = self.labels[index]
-        # Read each 784 pixels and reshape the 1D array ([784]) to 2D array ([28,28]) 
-        img_as_np = np.asarray(self.data.iloc[index][1:]).reshape(28,28).astype('uint8')
+        # Read each 784 pixels and reshape the 1D array ([784]) to 2D array ([28,28])
+        img_as_np = np.asarray(self.data.iloc[index][1:]).reshape(28, 28).astype('uint8')
         # Convert image from numpy array to PIL image, mode 'L' is for grayscale
         img_as_img = Image.fromarray(img_as_np)
         img_as_img = img_as_img.convert('L')
