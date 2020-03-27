@@ -114,7 +114,7 @@ class MyCustomDataset(Dataset):
         data = self.to_tensor(data)  # (2)
         
         # Or you can call the composed version
-        data = self.trasnformations(data)  # (3)
+        data = self.transformations(data)  # (3)
         
         # Note that you only need one of the implementations, (2) or (3)
         return (img, label)
